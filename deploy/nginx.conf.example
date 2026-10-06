@@ -1,0 +1,47 @@
+# Kairos Viewer (Web) – Beispiel für nginx. PLATZHALTER anpassen.
+# Inhalt von dist-web/ nach /var/www/kairos-viewer kopieren, nginx-security-headers.conf nach /etc/nginx/snippets/.
+
+# --- in den http { }-Block (z. B. /etc/nginx/conf.d/kairos-log.conf) ---
+# IP-Adressen gekürzt protokollieren (letztes Oktett bzw. hintere 80 Bit von IPv6 auf 0).
+map $remote_addr $remote_addr_anon {
+    ~(?P<ip>\d+\.\d+\.\d+)\.\d+    $ip.0;
+    ~(?P<ip>[^:]+:[^:]+:[^:]+):    $ip::;
+    default                        0.0.0.0;
+}
+log_format kairos_anon '$remote_addr_anon - [$time_local] "$request" $status $body_bytes_sent';
+
+# --- Server ---
+server {
+    listen 80;
+    server_name viewer.example.de;            # PLATZHALTER
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name viewer.example.de;            # PLATZHALTER
+    ssl_certificate     /etc/letsencrypt/live/viewer.example.de/fullchain.pem;   # PLATZHALTER
+    ssl_certificate_key /etc/letsencrypt/live/viewer.example.de/privkey.pem;     # PLATZHALTER
+
+    root /var/www/kairos-viewer;
+    index index.html;
+    access_log /var/log/nginx/kairos-viewer.log kairos_anon;  # Aufbewahrung per logrotate kurz halten (z. B. 7 Tage)
+
+    # Nur lesen – Uploads gibt es nicht (limit_except ist nur in location-Blöcken erlaubt, s. u.).
+    client_max_body_size 1k;
+
+    location /assets/ {
+        limit_except GET HEAD { deny all; }
+        include snippets/nginx-security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    location / {
+        limit_except GET HEAD { deny all; }
+        include snippets/nginx-security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri $uri/ =404;
+    }
+}

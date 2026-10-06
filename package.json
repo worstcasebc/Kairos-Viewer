@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "build:web": "tsc --noEmit && vite build --config vite.web.config.ts",
     "dev:web": "vite --config vite.web.config.ts",
+    "preview:web": "npm run build:web && node scripts/serve-web.mjs",
     "test": "vitest run",
     "tauri": "tauri"
   },
