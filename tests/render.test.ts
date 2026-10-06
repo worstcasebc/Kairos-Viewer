@@ -87,7 +87,33 @@ describe('renderGanttBody', () => {
   });
 });
 
-test('renderGanttAxis zeichnet zwei Beschriftungszeilen', () => {
+describe('Pfeilführung', () => {
+  /** Letztes horizontales Segment eines Pfads: [von x, nach x]. */
+  function lastSegment(svg: SVGSVGElement, from: string, to: string): [number, number] {
+    const d = svg.querySelector(`path.dep[data-from="${from}"][data-to="${to}"]`)!.getAttribute('d')!;
+    const xs: number[] = [];
+    let x = 0;
+    for (const [, cmd, value] of d.matchAll(/([MHV])([-\d.]+)(?:,[-\d.]+)?/g)) {
+      if (cmd === 'M' || cmd === 'H') x = Number(value);
+      xs.push(x);
+    }
+    return [xs[xs.length - 2], xs[xs.length - 1]];
+  }
+
+  test('FS-Pfeil erreicht den Anfang des Nachfolgers von links, auch ohne Abstand', () => {
+    const [before, end] = lastSegment(render(), 'wireframes', 'frontend');
+    expect(before).toBeLessThan(end);
+  });
+
+  test('FF-Pfeil erreicht das Ende des Nachfolgers von rechts', () => {
+    const svg = render({ mutate: (p) => p.dependencies.push({ predecessorId: 'anforderungen', successorId: 'tests', type: 'FF', lagMinutes: 0 }) });
+    const [before, end] = lastSegment(svg, 'anforderungen', 'tests');
+    expect(before).toBeGreaterThan(end);
+  });
+});
+
+test('renderGanttAxis zeichnet zwei Beschriftungszeilen'
+, () => {
   const axis = renderGanttAxis(createScale('day', dayNumber('2026-06-23'), dayNumber('2026-06-30')));
   expect(axis.getAttribute('height')).toBe(String(AXIS_HEIGHT));
   const labels = [...axis.querySelectorAll('text')].map((t) => t.textContent);

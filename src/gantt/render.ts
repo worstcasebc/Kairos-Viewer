@@ -115,11 +115,21 @@ export function renderGanttBody(opts: GanttOptions): SVGSVGElement {
     const toStart = d.type[1] === 'S';
     const fx = fromStart ? from.startX : from.endX;
     const tx = toStart ? to.startX : to.endX;
-    const bendX = fx + (fromStart ? -8 : 8);
+    // Austritt 8 px vor/nach der Kante; Eintritt in den Nachfolger immer von der Außenseite
+    // (Anfang von links, Ende von rechts). Passt das nicht direkt, Umweg zwischen den Zeilen.
+    const outX = fx + (fromStart ? -8 : 8);
+    const inX = tx + (toStart ? -8 : 8);
+    const direct = toStart ? outX <= tx : outX >= tx;
+    const midY = to.y + (to.y > from.y ? -ROW_HEIGHT / 2 : ROW_HEIGHT / 2);
+    const route = direct
+      ? `M${fx},${from.y} H${outX} V${to.y} H${tx}`
+      : `M${fx},${from.y} H${outX} V${midY} H${inX} V${to.y} H${tx}`;
     const critical = from.critical && to.critical;
     el('path', {
-      d: `M${fx},${from.y} H${bendX} V${to.y} H${tx}`,
+      d: route,
       class: `dep${critical ? ' critical' : ''}`,
+      'data-from': d.predecessorId,
+      'data-to': d.successorId,
       'marker-end': `url(#${critical ? 'arrow-critical' : 'arrow'})`,
     }, svg);
   }
