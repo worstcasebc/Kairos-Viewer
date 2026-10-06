@@ -169,7 +169,9 @@ fn col(available: &HashSet<String>, name: &str) -> String {
 
 fn open_readonly(path: &Path) -> Result<Connection, ReadError> {
     let flags = OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_URI | OpenFlags::SQLITE_OPEN_NO_MUTEX;
-    Ok(Connection::open_with_flags(sqlite_uri(path), flags)?)
+    // Die URI ist immer absolut; relative Pfade (Kommandozeile) erst gegen das Arbeitsverzeichnis auflösen.
+    let absolute = std::path::absolute(path)?;
+    Ok(Connection::open_with_flags(sqlite_uri(&absolute), flags)?)
 }
 
 pub fn read_project(path: &Path) -> Result<ProjectDto, ReadError> {

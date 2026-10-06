@@ -228,3 +228,10 @@ fn serializes_camel_case_with_nulls() {
     assert!(json["tasks"][0].get("earlyStart").is_some());
     assert!(json["dependencies"][0].get("lagMinutes").is_some());
 }
+
+#[test]
+fn reads_relative_path() {
+    // cargo test läuft im Paketordner (src-tauri); der Pfad ist bewusst relativ.
+    let project = read_project(Path::new("tests/fixtures/demo-v2.kairos")).unwrap();
+    assert_eq!(project.tasks.len(), 9);
+}
