@@ -1,0 +1,296 @@
+{
+  "activeBaselineId": "38B07110-9FF4-4C2A-A264-5723C56A5E21",
+  "baselines": [
+    {
+      "id": "38B07110-9FF4-4C2A-A264-5723C56A5E21",
+      "name": "Basisplan",
+      "tasks": [
+        {
+          "finish": "2026-07-01T12:00",
+          "start": "2026-06-25T08:00",
+          "taskId": "C3E21EA2-13CF-4FEB-B422-E4407DCA3EE4"
+        },
+        {
+          "finish": "2026-06-29T14:00",
+          "start": "2026-06-25T08:00",
+          "taskId": "3904A092-0B44-445A-B35A-423F7CC25673"
+        },
+        {
+          "finish": "2026-07-01T12:00",
+          "start": "2026-06-29T14:00",
+          "taskId": "C767EE40-35EF-45A4-B777-CDA82EFEA8CE"
+        },
+        {
+          "finish": "2026-07-09T14:00",
+          "start": "2026-07-01T12:00",
+          "taskId": "05F912E9-7BE9-4230-A89B-3641CA8F41BF"
+        },
+        {
+          "finish": "2026-07-07T16:00",
+          "start": "2026-07-01T12:00",
+          "taskId": "72004834-3056-4AB6-B1BF-589F4296CEA8"
+        },
+        {
+          "finish": "2026-07-07T16:00",
+          "start": "2026-07-01T12:00",
+          "taskId": "B08B19EF-BFD9-4E1F-BFB6-3C0EFEFB3BB3"
+        },
+        {
+          "finish": "2026-07-09T14:00",
+          "start": "2026-07-07T16:00",
+          "taskId": "52264B02-6B47-49A9-9F4C-D24E9CEB3999"
+        },
+        {
+          "finish": "2026-07-14T11:00",
+          "start": "2026-07-09T14:00",
+          "taskId": "66B8A5E8-CA5E-42B7-8DC8-F8F056AAFD15"
+        },
+        {
+          "finish": "2026-07-14T11:00",
+          "start": "2026-07-14T11:00",
+          "taskId": "D2A723C6-3B1F-4C78-A85C-E8F1CE769B46"
+        }
+      ]
+    }
+  ],
+  "calendar": {
+    "exceptions": [],
+    "workweek": [
+      {
+        "isWorking": true,
+        "weekday": 0
+      },
+      {
+        "isWorking": true,
+        "weekday": 1
+      },
+      {
+        "isWorking": true,
+        "weekday": 2
+      },
+      {
+        "isWorking": true,
+        "weekday": 3
+      },
+      {
+        "isWorking": true,
+        "weekday": 4
+      }
+    ]
+  },
+  "daysPerWeek": 5.0,
+  "dependencies": [
+    {
+      "lagMinutes": 0,
+      "predecessorId": "3904A092-0B44-445A-B35A-423F7CC25673",
+      "successorId": "C767EE40-35EF-45A4-B777-CDA82EFEA8CE",
+      "type": "FS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "C767EE40-35EF-45A4-B777-CDA82EFEA8CE",
+      "successorId": "72004834-3056-4AB6-B1BF-589F4296CEA8",
+      "type": "FS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "72004834-3056-4AB6-B1BF-589F4296CEA8",
+      "successorId": "B08B19EF-BFD9-4E1F-BFB6-3C0EFEFB3BB3",
+      "type": "SS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "72004834-3056-4AB6-B1BF-589F4296CEA8",
+      "successorId": "52264B02-6B47-49A9-9F4C-D24E9CEB3999",
+      "type": "FS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "B08B19EF-BFD9-4E1F-BFB6-3C0EFEFB3BB3",
+      "successorId": "52264B02-6B47-49A9-9F4C-D24E9CEB3999",
+      "type": "FS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "52264B02-6B47-49A9-9F4C-D24E9CEB3999",
+      "successorId": "66B8A5E8-CA5E-42B7-8DC8-F8F056AAFD15",
+      "type": "FS"
+    },
+    {
+      "lagMinutes": 0,
+      "predecessorId": "66B8A5E8-CA5E-42B7-8DC8-F8F056AAFD15",
+      "successorId": "D2A723C6-3B1F-4C78-A85C-E8F1CE769B46",
+      "type": "FS"
+    }
+  ],
+  "finishDate": null,
+  "hoursPerDay": 8.0,
+  "name": "",
+  "schemaVersion": 2,
+  "startDate": "2026-06-25",
+  "statusDate": null,
+  "tasks": [
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 0,
+      "earlyFinish": "2026-07-01T12:00",
+      "earlyStart": "2026-06-25T08:00",
+      "fixedFinish": null,
+      "freeFloat": null,
+      "id": "C3E21EA2-13CF-4FEB-B422-E4407DCA3EE4",
+      "isCritical": false,
+      "name": "Konzeption",
+      "orderIndex": 0,
+      "parentId": null,
+      "percentComplete": 0.0,
+      "totalFloat": null,
+      "type": "summary"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 1440,
+      "earlyFinish": "2026-06-29T14:00",
+      "earlyStart": "2026-06-25T08:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "3904A092-0B44-445A-B35A-423F7CC25673",
+      "isCritical": true,
+      "name": "Anforderungen",
+      "orderIndex": 0,
+      "parentId": "C3E21EA2-13CF-4FEB-B422-E4407DCA3EE4",
+      "percentComplete": 1.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 960,
+      "earlyFinish": "2026-07-01T12:00",
+      "earlyStart": "2026-06-29T14:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "C767EE40-35EF-45A4-B777-CDA82EFEA8CE",
+      "isCritical": true,
+      "name": "Wireframes",
+      "orderIndex": 1,
+      "parentId": "C3E21EA2-13CF-4FEB-B422-E4407DCA3EE4",
+      "percentComplete": 1.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 0,
+      "earlyFinish": "2026-07-09T14:00",
+      "earlyStart": "2026-07-01T12:00",
+      "fixedFinish": null,
+      "freeFloat": null,
+      "id": "05F912E9-7BE9-4230-A89B-3641CA8F41BF",
+      "isCritical": false,
+      "name": "Umsetzung",
+      "orderIndex": 1,
+      "parentId": null,
+      "percentComplete": 0.0,
+      "totalFloat": null,
+      "type": "summary"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 2400,
+      "earlyFinish": "2026-07-07T16:00",
+      "earlyStart": "2026-07-01T12:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "72004834-3056-4AB6-B1BF-589F4296CEA8",
+      "isCritical": true,
+      "name": "Frontend",
+      "orderIndex": 0,
+      "parentId": "05F912E9-7BE9-4230-A89B-3641CA8F41BF",
+      "percentComplete": 0.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 2400,
+      "earlyFinish": "2026-07-07T16:00",
+      "earlyStart": "2026-07-01T12:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "B08B19EF-BFD9-4E1F-BFB6-3C0EFEFB3BB3",
+      "isCritical": true,
+      "name": "Backend",
+      "orderIndex": 1,
+      "parentId": "05F912E9-7BE9-4230-A89B-3641CA8F41BF",
+      "percentComplete": 0.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 960,
+      "earlyFinish": "2026-07-09T14:00",
+      "earlyStart": "2026-07-07T16:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "52264B02-6B47-49A9-9F4C-D24E9CEB3999",
+      "isCritical": true,
+      "name": "Integration",
+      "orderIndex": 2,
+      "parentId": "05F912E9-7BE9-4230-A89B-3641CA8F41BF",
+      "percentComplete": 0.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 1440,
+      "earlyFinish": "2026-07-14T11:00",
+      "earlyStart": "2026-07-09T14:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "66B8A5E8-CA5E-42B7-8DC8-F8F056AAFD15",
+      "isCritical": true,
+      "name": "Tests",
+      "orderIndex": 2,
+      "parentId": null,
+      "percentComplete": 0.0,
+      "totalFloat": 0,
+      "type": "normal"
+    },
+    {
+      "deadline": null,
+      "deadlineMissed": false,
+      "displayUnit": "d",
+      "durationMinutes": 0,
+      "earlyFinish": "2026-07-14T11:00",
+      "earlyStart": "2026-07-14T11:00",
+      "fixedFinish": null,
+      "freeFloat": 0,
+      "id": "D2A723C6-3B1F-4C78-A85C-E8F1CE769B46",
+      "isCritical": true,
+      "name": "Go-Live",
+      "orderIndex": 3,
+      "parentId": null,
+      "percentComplete": 0.0,
+      "totalFloat": 0,
+      "type": "milestone"
+    }
+  ]
+}

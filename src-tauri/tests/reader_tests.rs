@@ -235,3 +235,16 @@ fn reads_relative_path() {
     let project = read_project(Path::new("tests/fixtures/demo-v2.kairos")).unwrap();
     assert_eq!(project.tasks.len(), 9);
 }
+
+/// Bindet Rust- und Web-Reader an dieselbe Ausgabe. Neu erzeugen: `UPDATE_GOLDEN=1 cargo test … demo_matches_golden_json`.
+#[test]
+fn demo_matches_golden_json() {
+    let golden = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/demo-v2.expected.json");
+    let actual = serde_json::to_value(read_project(&fixture("demo-v2.kairos")).unwrap()).unwrap();
+    if std::env::var_os("UPDATE_GOLDEN").is_some() {
+        std::fs::write(&golden, serde_json::to_string_pretty(&actual).unwrap() + "\n").unwrap();
+    }
+    let text = std::fs::read_to_string(&golden).expect("Referenzdatei fehlt – mit UPDATE_GOLDEN=1 erzeugen");
+    let expected: serde_json::Value = serde_json::from_str(&text).unwrap();
+    assert_eq!(actual, expected);
+}
