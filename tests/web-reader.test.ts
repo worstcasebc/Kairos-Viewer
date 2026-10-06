@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { SqlJsStatic } from 'sql.js';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { ReaderError, readProject } from '../src/web/reader';
@@ -84,5 +86,47 @@ describe('readProject – Prüfung', () => {
     const copy = bytes.slice();
     readProject(bytes, sql);
     expect(bytes).toEqual(copy);
+  });
+});
+
+describe('readProject – Daten', () => {
+  test('deckungsgleich mit dem Rust-Reader (Referenzdatei)', () => {
+    const expected = JSON.parse(readFileSync(join(process.cwd(), 'tests/fixtures/demo-v2.expected.json'), 'utf-8'));
+    expect(readProject(fixtureBytes('demo-v2.kairos'), sql)).toEqual(expected);
+  });
+
+  test('Datei ohne optionale Spalten und Tabellen', () => {
+    const project = readProject(makeDb(2), sql);
+    expect(project.tasks).toHaveLength(2);
+    expect(project.tasks[0]).toMatchObject({
+      name: 'Alpha',
+      type: 'normal',
+      durationMinutes: 960,
+      percentComplete: 0.5,
+      earlyStart: '2026-01-05T08:00',
+      isCritical: true,
+      fixedFinish: null,
+    });
+    expect(project.tasks[1]).toMatchObject({ earlyStart: null, totalFloat: null, isCritical: false, deadlineMissed: false });
+    expect(project.dependencies).toEqual([{ predecessorId: 't1', successorId: 't2', type: 'FF', lagMinutes: -120 }]);
+    expect(project.calendar).toBeNull();
+    expect(project.baselines).toEqual([]);
+  });
+
+  test('v5-Spalten', () => {
+    const project = readProject(
+      makeDb(
+        5,
+        `ALTER TABLE task ADD COLUMN fixed_finish TEXT;
+         ALTER TABLE project ADD COLUMN status_date TEXT;
+         ALTER TABLE project ADD COLUMN active_baseline_id TEXT;
+         UPDATE task SET fixed_finish = '2026-01-07T17:00' WHERE id = 't1';
+         UPDATE project SET status_date = '2026-01-06';`,
+      ),
+      sql,
+    );
+    expect(project.schemaVersion).toBe(5);
+    expect(project.statusDate).toBe('2026-01-06');
+    expect(project.tasks[0].fixedFinish).toBe('2026-01-07T17:00');
   });
 });

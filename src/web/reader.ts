@@ -3,7 +3,7 @@
 // tests/fixtures/demo-v2.expected.json.
 
 import type { Database, SqlJsStatic, SqlValue } from 'sql.js';
-import type { ProjectDto } from '../model';
+import type { BaselineDto, CalendarDto, DependencyDto, DependencyType, DisplayUnit, ProjectDto, TaskDto, TaskType } from '../model';
 
 export const MIN_SCHEMA_VERSION = 2;
 export const MAX_SCHEMA_VERSION = 5;
@@ -73,7 +73,11 @@ export function readProject(bytes: Uint8Array, sql: SqlJsStatic): ProjectDto {
     if (!(version >= MIN_SCHEMA_VERSION && version <= MAX_SCHEMA_VERSION)) {
       throw new ReaderError(`Die Kairos-Dateiversion ${version} wird nicht unterstützt (unterstützt: 2–5).`);
     }
-    const { project } = readProjectRow(db, version);
+    const { project, defaultCalendarId } = readProjectRow(db, version);
+    project.tasks = readTasks(db);
+    project.dependencies = readDependencies(db);
+    project.calendar = defaultCalendarId === null ? null : readCalendar(db, defaultCalendarId);
+    project.baselines = readBaselines(db);
     return project;
   } catch (error) {
     if (error instanceof ReaderError) throw error;
@@ -109,4 +113,71 @@ function readProjectRow(db: Database, version: number): { project: ProjectDto; d
     },
     defaultCalendarId: text(row.default_calendar_id),
   };
+}
+
+const num = (value: SqlValue | undefined): number | null => (value === null || value === undefined ? null : Number(value));
+const flag = (value: SqlValue | undefined): boolean => value !== null && value !== undefined && Number(value) !== 0;
+
+function readTasks(db: Database): TaskDto[] {
+  const cols = columns(db, 'task');
+  const optional = ['deadline', 'early_start', 'early_finish', 'total_float', 'free_float', 'is_critical', 'deadline_missed', 'fixed_finish'];
+  const select =
+    `SELECT id, ${col(cols, 'parent_id')}, order_index, name, type, duration_minutes, display_unit, percent_complete, ` +
+    `${optional.map((name) => col(cols, name)).join(', ')} FROM task ORDER BY rowid`;
+  return rows(db, select).map((r) => ({
+    id: String(r.id),
+    parentId: text(r.parent_id),
+    orderIndex: Number(r.order_index),
+    name: String(r.name),
+    type: String(r.type) as TaskType,
+    durationMinutes: Number(r.duration_minutes),
+    displayUnit: String(r.display_unit) as DisplayUnit,
+    percentComplete: Number(r.percent_complete),
+    deadline: text(r.deadline),
+    earlyStart: text(r.early_start),
+    earlyFinish: text(r.early_finish),
+    totalFloat: num(r.total_float),
+    freeFloat: num(r.free_float),
+    isCritical: flag(r.is_critical),
+    deadlineMissed: flag(r.deadline_missed),
+    fixedFinish: text(r.fixed_finish),
+  }));
+}
+
+function readDependencies(db: Database): DependencyDto[] {
+  return rows(db, 'SELECT predecessor_id, successor_id, type, lag_minutes FROM dependency ORDER BY rowid').map((r) => ({
+    predecessorId: String(r.predecessor_id),
+    successorId: String(r.successor_id),
+    type: String(r.type) as DependencyType,
+    lagMinutes: Number(r.lag_minutes),
+  }));
+}
+
+function readCalendar(db: Database, calendarId: string): CalendarDto | null {
+  if (columns(db, 'calendar_workweek').size === 0) return null;
+  const workweek = rows(
+    db,
+    'SELECT weekday, is_working FROM calendar_workweek WHERE calendar_id = ? ORDER BY weekday',
+    [calendarId],
+  ).map((r) => ({ weekday: Number(r.weekday), isWorking: flag(r.is_working) }));
+  const exceptions =
+    columns(db, 'calendar_exception').size === 0
+      ? []
+      : rows(db, 'SELECT date, is_working FROM calendar_exception WHERE calendar_id = ? ORDER BY date', [calendarId]).map(
+          (r) => ({ date: String(r.date), isWorking: flag(r.is_working) }),
+        );
+  return { workweek, exceptions };
+}
+
+function readBaselines(db: Database): BaselineDto[] {
+  const baselineCols = columns(db, 'baseline');
+  if (baselineCols.size === 0 || columns(db, 'baseline_task').size === 0) return [];
+  const order = baselineCols.has('captured_at') ? 'captured_at, rowid' : 'rowid';
+  return rows(db, `SELECT id, name FROM baseline ORDER BY ${order}`).map((head) => ({
+    id: String(head.id),
+    name: String(head.name),
+    tasks: rows(db, 'SELECT task_id, start, finish FROM baseline_task WHERE baseline_id = ? ORDER BY rowid', [
+      String(head.id),
+    ]).map((r) => ({ taskId: String(r.task_id), start: text(r.start), finish: text(r.finish) })),
+  }));
 }
