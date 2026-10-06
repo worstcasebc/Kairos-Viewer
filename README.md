@@ -33,6 +33,22 @@ powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1
 
 Ergebnis: `.msi` und `*-setup.exe` unter `src-tauri\target\release\bundle\`.
 
+## Web-Version
+
+Der Viewer läuft auch als statische Webseite. Die Datei wird **ausschließlich im Browser** gelesen (sql.js als eingebettetes
+WebAssembly) und nie an den Server übertragen; die Sicherheitsrichtlinie (`connect-src 'none'`) verbietet der Seite nach dem
+Laden jede Netzwerkverbindung. Keine Cookies, kein Tracking, keine externen Ressourcen.
+
+```bash
+npm run build:web      # → dist-web/ (statisch, relativ verlinkt)
+npm run preview:web    # lokal mit denselben Sicherheits-Headern: http://localhost:4173
+```
+
+Ausliefern: Inhalt von `dist-web/` auf einen beliebigen Webserver kopieren und die Header aus
+`deploy/nginx.conf.example` + `deploy/nginx-security-headers.conf` bzw. `deploy/.htaccess.example` übernehmen.
+`web/impressum.html` und `web/datenschutz.html` enthalten Platzhalter (`[PLATZHALTER: …]`), die vor der Veröffentlichung
+ersetzt und rechtlich geprüft werden müssen.
+
 ## Dateizuordnung
 
 Der Installer registriert `.kairos` mit der Rolle „Viewer“. Ist auf dem Mac auch Kairos installiert,
