@@ -6,12 +6,13 @@
   }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body, #app { height: auto; overflow: visible; background: #fff; }
-  .toolbar, .banner, .splitter, .empty { display: none !important; }
-  .main { display: flex; height: auto; overflow: visible; zoom: var(--print-zoom, 1); }
-  .pane-table, .pane-gantt, .table-scroll, .gantt-scroll, .gantt-header {
-    overflow: visible !important; height: auto !important; max-height: none !important;
-  }
-  .pane-table { width: max-content !important; }
-  .pane-gantt { flex: none; }
-  .row { break-inside: avoid; }
+  /* Gedruckt werden nur die beim Klick auf „Drucken…“ erzeugten Seiten (app.ts, renderPrintPages):
+     je Seite ein fester Zeilenblock mit eigener Kopfzeile, damit Tabelle und Gantt nie gegeneinander verrutschen. */
+  .toolbar, .banner, .empty, .main { display: none !important; }
+  .print-pages { display: block !important; }
+  .print-page { display: flex; align-items: flex-start; zoom: var(--print-zoom, 1); break-after: page; }
+  .print-page:last-child { break-after: auto; }
+  .print-table, .print-gantt { flex: none; }
+  .print-table { width: max-content; }
+  .print-table .table-header { position: static; }
 }

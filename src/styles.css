@@ -50,13 +50,16 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
 
 .main { flex: 1; display: flex; min-height: 0; }
 .pane-table { width: var(--table-w); flex: none; display: flex; flex-direction: column; min-width: 200px; }
-.table-header { height: var(--axis-h); background: var(--head); border-bottom: 1px solid var(--line); overflow: hidden; box-sizing: border-box; }
-.table-scroll { flex: 1; overflow-x: auto; overflow-y: hidden; }
+/* Kopfzeilen kleben oben in ihrem Scrollbereich und laufen so horizontal mit. Beide Bereiche haben
+   immer einen horizontalen Scrollbalken, damit ihre vertikalen Scrollhöhen auch unter Windows gleich sind. */
+.table-scroll { flex: 1; overflow-x: scroll; overflow-y: hidden; }
+.table-header, .gantt-header { position: sticky; top: 0; z-index: 1; height: var(--axis-h); width: max-content; min-width: 100%; background: var(--head); border-bottom: 1px solid var(--line); box-sizing: border-box; }
 .splitter { width: 5px; flex: none; cursor: col-resize; background: var(--line); }
 .pane-gantt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.gantt-header { height: var(--axis-h); flex: none; overflow: hidden; background: var(--head); border-bottom: 1px solid var(--line); box-sizing: border-box; }
-.gantt-scroll { flex: 1; overflow: auto; }
+.gantt-scroll { flex: 1; overflow-x: scroll; overflow-y: auto; }
 .gantt-header svg, .gantt-scroll svg { display: block; }
+.print-pages { display: none; }
+.print-page svg { display: block; }
 
 .header-row, .row { display: grid; grid-template-columns: var(--cols); align-items: center; white-space: nowrap; box-sizing: border-box; }
 .header-row { height: calc(var(--axis-h) - 1px); font-weight: 600; }

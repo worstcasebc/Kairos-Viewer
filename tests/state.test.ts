@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
-  baselineMap, collapseAll, displayTitle, expandAll, initialState, loadProject, missingDates, printZoom, toggleCollapsed,
+  baselineMap, collapseAll, displayTitle, expandAll, initialState, loadProject, missingDates, printZoom, rowsPerPrintPage, toggleCollapsed,
 } from '../src/state';
 import { demoProject } from './fixtures/demo';
 
@@ -64,4 +64,10 @@ test('printZoom skaliert nur herunter', () => {
   expect(printZoom(3024)).toBe(0.5);
   expect(printZoom(1000)).toBe(1);
   expect(printZoom(0)).toBe(1);
+});
+
+test('rowsPerPrintPage: Zeilen pro A3-Seite abhängig vom Druck-Zoom', () => {
+  expect(rowsPerPrintPage(1)).toBe(41);
+  expect(rowsPerPrintPage(0.5)).toBe(84);
+  expect(rowsPerPrintPage(1, 50)).toBe(1);
 });

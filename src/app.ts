@@ -3,15 +3,15 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { open } from '@tauri-apps/plugin-dialog';
 import { makeWorkingDayFn, todayCivil } from './gantt/calendar';
-import { renderGanttAxis, renderGanttBody } from './gantt/render';
+import { renderGanttAxis, renderGanttBody, type GanttOptions } from './gantt/render';
 import { computeRange, createScale, type Zoom } from './gantt/scale';
 import type { ProjectDto } from './model';
 import { predecessorTexts } from './predecessors';
 import {
   baselineMap, collapseAll, displayTitle, expandAll, initialState, loadProject, missingDates, printZoom,
-  toggleCollapsed, type ViewState,
+  rowsPerPrintPage, toggleCollapsed, type ViewState,
 } from './state';
-import { renderTableBody, renderTableHeader } from './table';
+import { renderTableBody, renderTableHeader, type TableOptions } from './table';
 import { visibleRows } from './tree';
 
 // Statisches Gerüst ohne Nutzerdaten – Inhalte werden ausschließlich per DOM-API/textContent gesetzt.
@@ -33,10 +33,15 @@ const LAYOUT = `
 <div class="banner" hidden></div>
 <div class="empty">Kairos-Datei öffnen oder hierher ziehen</div>
 <main class="main" hidden>
-  <section class="pane-table"><div class="table-header"></div><div class="table-scroll"></div></section>
+  <section class="pane-table">
+    <div class="table-scroll"><div class="table-header"></div><div class="table-rows"></div></div>
+  </section>
   <div class="splitter" role="separator" aria-orientation="vertical"></div>
-  <section class="pane-gantt"><div class="gantt-header"></div><div class="gantt-scroll"></div></section>
-</main>`;
+  <section class="pane-gantt">
+    <div class="gantt-scroll"><div class="gantt-header"></div><div class="gantt-rows"></div></div>
+  </section>
+</main>
+<div class="print-pages"></div>`;
 
 export function startApp(root: HTMLElement): void {
   let state: ViewState = initialState();
@@ -50,12 +55,17 @@ export function startApp(root: HTMLElement): void {
   const tablePane = q<HTMLElement>('.pane-table');
   const tableHeader = q<HTMLDivElement>('.table-header');
   const tableScroll = q<HTMLDivElement>('.table-scroll');
+  const tableRows = q<HTMLDivElement>('.table-rows');
   const ganttHeader = q<HTMLDivElement>('.gantt-header');
   const ganttScroll = q<HTMLDivElement>('.gantt-scroll');
+  const ganttRows = q<HTMLDivElement>('.gantt-rows');
   const splitter = q<HTMLDivElement>('.splitter');
   const baselineCheckbox = q<HTMLInputElement>('[data-action="baseline"]');
   const baselineSelect = q<HTMLSelectElement>('[data-action="baseline-select"]');
   const zoomButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-zoom]')];
+  const printPages = q<HTMLDivElement>('.print-pages');
+  // Zuletzt gerenderte Ansicht; der Druck baut daraus seitenweise eigene Tabellen-/Gantt-Stücke.
+  let view: { table: TableOptions; gantt: GanttOptions } | null = null;
 
   function showBanner(text: string, kind: 'info' | 'error'): void {
     banner.textContent = text;
@@ -90,9 +100,12 @@ export function startApp(root: HTMLElement): void {
     if (!project || !tree) return;
 
     const rows = visibleRows(tree, state.collapsed);
-    tableHeader.replaceChildren(renderTableHeader());
-    tableScroll.replaceChildren(
-      renderTableBody({
+    const today = todayCivil();
+    const baselineId = state.showBaseline ? state.baselineId : null;
+    const range = computeRange(project, baselineId, today);
+    const scale = createScale(state.zoom, range.startDay, range.endDay);
+    view = {
+      table: {
         rows,
         predecessors: predecessorTexts(project.dependencies, tree, project.hoursPerDay),
         hoursPerDay: project.hoursPerDay,
@@ -100,16 +113,8 @@ export function startApp(root: HTMLElement): void {
           state = toggleCollapsed(state, id);
           render();
         },
-      }),
-    );
-
-    const today = todayCivil();
-    const baselineId = state.showBaseline ? state.baselineId : null;
-    const range = computeRange(project, baselineId, today);
-    const scale = createScale(state.zoom, range.startDay, range.endDay);
-    ganttHeader.replaceChildren(renderGanttAxis(scale));
-    ganttScroll.replaceChildren(
-      renderGanttBody({
+      },
+      gantt: {
         rows,
         dependencies: project.dependencies,
         scale,
@@ -117,8 +122,12 @@ export function startApp(root: HTMLElement): void {
         today,
         statusDate: project.statusDate,
         baseline: state.showBaseline ? baselineMap(state) : null,
-      }),
-    );
+      },
+    };
+    tableHeader.replaceChildren(renderTableHeader());
+    tableRows.replaceChildren(renderTableBody(view.table));
+    ganttHeader.replaceChildren(renderGanttAxis(scale));
+    ganttRows.replaceChildren(renderGanttBody(view.gantt));
     syncScroll();
 
     const missing = missingDates(project);
@@ -150,11 +159,36 @@ export function startApp(root: HTMLElement): void {
     if (typeof selected === 'string') await openPath(selected);
   }
 
+  /** Druckseiten mit festen Zeilenblöcken: Tabelle und Gantt brechen so garantiert gemeinsam um. */
+  function renderPrintPages(perPage: number): void {
+    if (!view) return;
+    const { table, gantt } = view;
+    const pages: HTMLElement[] = [];
+    for (let start = 0; start === 0 || start < table.rows.length; start += perPage) {
+      const rows = table.rows.slice(start, start + perPage);
+      const page = document.createElement('div');
+      page.className = 'print-page';
+      const tablePart = document.createElement('div');
+      tablePart.className = 'print-table';
+      const header = document.createElement('div');
+      header.className = 'table-header';
+      header.appendChild(renderTableHeader());
+      tablePart.append(header, renderTableBody({ ...table, rows }));
+      const ganttPart = document.createElement('div');
+      ganttPart.className = 'print-gantt';
+      ganttPart.append(renderGanttAxis(gantt.scale), renderGanttBody({ ...gantt, rows }));
+      page.append(tablePart, ganttPart);
+      pages.push(page);
+    }
+    printPages.replaceChildren(...pages);
+  }
+
   async function printProject(): Promise<void> {
     if (!state.project) return;
-    // Im Druck bekommt die Tabelle ihre volle Breite (print.css), nicht die Bildschirmbreite des Bereichs.
-    const total = tableScroll.scrollWidth + ganttScroll.scrollWidth;
-    document.documentElement.style.setProperty('--print-zoom', String(printZoom(total)));
+    // Volle Tabellenbreite (scrollWidth), nicht die Bildschirmbreite des Bereichs.
+    const zoom = printZoom(tableScroll.scrollWidth + ganttScroll.scrollWidth);
+    document.documentElement.style.setProperty('--print-zoom', String(zoom));
+    renderPrintPages(rowsPerPrintPage(zoom));
     try {
       await invoke('print_window');
     } catch (error) {
@@ -162,10 +196,10 @@ export function startApp(root: HTMLElement): void {
     }
   }
 
-  // Scroll-Sync: Gantt führt; Tabelle folgt vertikal, Achse folgt horizontal.
+  // Scroll-Sync: Gantt führt vertikal, die Tabelle folgt. Die Kopfzeilen liegen (sticky) in ihren
+  // Scrollbereichen und laufen horizontal von selbst mit.
   function syncScroll(): void {
     tableScroll.scrollTop = ganttScroll.scrollTop;
-    ganttHeader.scrollLeft = ganttScroll.scrollLeft;
   }
   ganttScroll.addEventListener('scroll', syncScroll);
   tableScroll.addEventListener(
