@@ -9,7 +9,9 @@
     "noUnusedParameters": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "allowJs": true
   },
   "include": ["src", "tests"]
 }
