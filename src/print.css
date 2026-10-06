@@ -1,1 +1,16 @@
-/* Druck-Layout: siehe Task 13 */
+@media print {
+  @page { size: A3 landscape; margin: 10mm; }
+  :root {
+    --bg: #fff; --fg: #000; --muted: #555; --line: #d0d0d5; --head: #f2f2f4;
+    --summary: #222; --nonworking: #f0f0f2;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body, #app { height: auto; overflow: visible; background: #fff; }
+  .toolbar, .banner, .splitter, .empty { display: none !important; }
+  .main { display: flex; height: auto; overflow: visible; zoom: var(--print-zoom, 1); }
+  .pane-table, .pane-gantt, .table-scroll, .gantt-scroll, .gantt-header {
+    overflow: visible !important; height: auto !important; max-height: none !important;
+  }
+  .pane-gantt { flex: none; }
+  .row { break-inside: avoid; }
+}
