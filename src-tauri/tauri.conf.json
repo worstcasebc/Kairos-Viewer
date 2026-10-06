@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Kairos Viewer",
+  "version": "0.1.0",
+  "identifier": "de.stevebaumann.kairos-viewer",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Kairos Viewer",
+        "width": 1400,
+        "height": 850,
+        "minWidth": 800,
+        "minHeight": 500,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "shortDescription": "Viewer für Kairos-Projektdateien",
+    "fileAssociations": [
+      {
+        "ext": ["kairos"],
+        "name": "Kairos-Projekt",
+        "description": "Kairos-Projektdatei",
+        "role": "Viewer"
+      }
+    ]
+  }
+}

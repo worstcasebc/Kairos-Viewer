@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimale Rechte des Viewers",
+  "windows": ["main"],
+  "permissions": ["core:default", "dialog:allow-open"]
+}
