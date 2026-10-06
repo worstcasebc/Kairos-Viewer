@@ -1,0 +1,6 @@
+/* Web: App-Bereich plus Fußzeile mit Impressum/Datenschutz. */
+body { display: flex; flex-direction: column; }
+#app { flex: 1; height: auto; min-height: 0; }
+.site-footer { flex: none; display: flex; gap: 16px; justify-content: flex-end; padding: 4px 10px; font-size: 12px; border-top: 1px solid var(--line); background: var(--head); }
+.site-footer a { color: var(--muted); }
+@media print { .site-footer { display: none; } }

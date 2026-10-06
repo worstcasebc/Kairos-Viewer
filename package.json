@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:web": "tsc --noEmit && vite build --config vite.web.config.ts",
+    "dev:web": "vite --config vite.web.config.ts",
     "test": "vitest run",
     "tauri": "tauri"
   },
