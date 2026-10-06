@@ -1,38 +1,55 @@
-import { expect, test, vi } from 'vitest';
-import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
+import { expect, test } from 'vitest';
 import { startApp } from '../src/app';
 import type { ProjectDto } from '../src/model';
+import type { Platform, PlatformCallbacks } from '../src/platform/types';
 import { demoProject, task } from './fixtures/demo';
 
-let printCalls = 0;
-
-async function openProject(project: ProjectDto, rows: number): Promise<HTMLElement> {
-  printCalls = 0;
-  mockWindows('main');
-  mockIPC((cmd) => {
-    if (cmd === 'initial_file') return '/x/demo.kairos';
-    if (cmd === 'open_project') return project;
-    if (cmd === 'print_window') printCalls += 1;
-    if (cmd.startsWith('plugin:event|')) return 1;
-    return null;
-  });
-  const root = document.createElement('div');
-  document.body.replaceChildren(root);
-  startApp(root);
-  await vi.waitFor(() => expect(root.querySelectorAll('.table-rows .row')).toHaveLength(rows));
-  return root;
+/** Test-Plattform: Dateien werden direkt über die Callbacks „geöffnet“. */
+function fakePlatform() {
+  let callbacks: PlatformCallbacks | null = null;
+  const fake = {
+    printCalls: 0,
+    chooseCalls: 0,
+    open(project: ProjectDto, fileName = '/x/demo.kairos') {
+      callbacks!.loaded({ project, fileName });
+    },
+    fail(message: string) {
+      callbacks!.failed(message);
+    },
+    platform: {
+      start(cb: PlatformCallbacks) {
+        callbacks = cb;
+      },
+      async chooseFile() {
+        fake.chooseCalls += 1;
+      },
+      async print() {
+        fake.printCalls += 1;
+      },
+    } satisfies Platform,
+  };
+  return fake;
 }
 
-const openDemo = () => openProject(demoProject(), 9);
+function setup(options = {}) {
+  const fake = fakePlatform();
+  const root = document.createElement('div');
+  document.body.replaceChildren(root);
+  startApp(root, fake.platform, options);
+  return { root, fake };
+}
 
-test('Kopfzeilen liegen in ihren Scrollbereichen und scrollen dadurch horizontal mit', async () => {
-  const root = await openDemo();
+test('Kopfzeilen liegen in ihren Scrollbereichen und scrollen dadurch horizontal mit', () => {
+  const { root, fake } = setup();
+  fake.open(demoProject());
+  expect(root.querySelectorAll('.table-rows .row')).toHaveLength(9);
   expect(root.querySelector('.table-scroll .header-row')).not.toBeNull();
   expect(root.querySelector('.gantt-scroll svg.gantt-axis')).not.toBeNull();
 });
 
-test('Neu-Rendern (Zoom) behält Kopfzeilen und Zeilen', async () => {
-  const root = await openDemo();
+test('Neu-Rendern (Zoom) behält Kopfzeilen und Zeilen', () => {
+  const { root, fake } = setup();
+  fake.open(demoProject());
   (root.querySelector('[data-zoom="day"]') as HTMLButtonElement).click();
   expect(root.querySelectorAll('.table-scroll .header-row')).toHaveLength(1);
   expect(root.querySelectorAll('.gantt-scroll svg.gantt-axis')).toHaveLength(1);
@@ -40,17 +57,26 @@ test('Neu-Rendern (Zoom) behält Kopfzeilen und Zeilen', async () => {
   expect(root.querySelectorAll('.table-rows .row')).toHaveLength(9);
 });
 
+test('Titel aus dem Dateinamen, Öffnen-Knopf fragt die Plattform', () => {
+  const { root, fake } = setup();
+  fake.open(demoProject(), 'C:\\Daten\\Plan A.kairos');
+  expect(root.querySelector('.title')?.textContent).toBe('Plan A');
+  (root.querySelector('[data-action="open"]') as HTMLButtonElement).click();
+  expect(fake.chooseCalls).toBe(1);
+});
+
 test('Drucken teilt lange Projekte in Seiten mit eigenen Kopfzeilen', async () => {
-  const many: ProjectDto = {
+  const { root, fake } = setup();
+  fake.open({
     ...demoProject(),
     tasks: Array.from({ length: 100 }, (_, i) =>
       task({ id: `t${i}`, name: `T${i}`, orderIndex: i, earlyStart: '2026-06-25T08:00', earlyFinish: '2026-06-26T08:00' }),
     ),
     dependencies: [],
-  };
-  const root = await openProject(many, 100);
+  });
   (root.querySelector('[data-action="print"]') as HTMLButtonElement).click();
-  await vi.waitFor(() => expect(printCalls).toBe(1));
+  await Promise.resolve();
+  expect(fake.printCalls).toBe(1);
   const pages = [...root.querySelectorAll('.print-pages .print-page')];
   expect(pages.map((p) => p.querySelectorAll('.row').length)).toEqual([41, 41, 18]);
   for (const page of pages) {
@@ -60,34 +86,24 @@ test('Drucken teilt lange Projekte in Seiten mit eigenen Kopfzeilen', async () =
   }
 });
 
-test('Fehlermeldung bleibt bis zum nächsten erfolgreichen Öffnen stehen', async () => {
-  const { emit } = await import('@tauri-apps/api/event');
-  mockWindows('main');
-  mockIPC(
-    (cmd, args) => {
-      if (cmd === 'initial_file') return '/x/demo.kairos';
-      if (cmd === 'open_project') {
-        if ((args as { path: string }).path.includes('kaputt')) throw 'Die Datei ist keine Kairos-Projektdatei.';
-        return demoProject();
-      }
-      return null;
-    },
-    { shouldMockEvents: true },
-  );
-  const root = document.createElement('div');
-  document.body.replaceChildren(root);
-  startApp(root);
-  await vi.waitFor(() => expect(root.querySelectorAll('.table-rows .row')).toHaveLength(9));
+test('Fehlermeldung bleibt bis zum nächsten erfolgreichen Öffnen stehen', () => {
+  const { root, fake } = setup();
+  fake.open(demoProject());
   const banner = root.querySelector('.banner') as HTMLElement;
-
-  await emit('open-file', '/x/kaputt.kairos');
-  await vi.waitFor(() => expect(banner.hidden).toBe(false));
+  fake.fail('Die Datei ist keine Kairos-Projektdatei.');
+  expect(banner.hidden).toBe(false);
   expect(banner.textContent).toBe('Die Datei ist keine Kairos-Projektdatei.');
-
   (root.querySelector('[data-zoom="day"]') as HTMLButtonElement).click();
   expect(banner.hidden).toBe(false);
   expect(banner.className).toBe('banner error');
+  fake.open(demoProject());
+  expect(banner.hidden).toBe(true);
+});
 
-  await emit('open-file', '/x/demo.kairos');
-  await vi.waitFor(() => expect(banner.hidden).toBe(true));
+test('Datenschutzhinweis im leeren Zustand, wenn übergeben', () => {
+  const note = 'Ihre Datei wird ausschließlich in Ihrem Browser verarbeitet und nicht übertragen.';
+  const withNote = setup({ privacyNote: note }).root.querySelector('.empty-note') as HTMLElement;
+  expect(withNote.hidden).toBe(false);
+  expect(withNote.textContent).toBe(note);
+  expect((setup().root.querySelector('.empty-note') as HTMLElement).hidden).toBe(true);
 });

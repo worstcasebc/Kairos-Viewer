@@ -46,7 +46,9 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
 .banner.info { background: #fff6d6; color: #5c4800; }
 .banner.error { background: #fde2e2; color: #7a1010; }
 
-.empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; }
+.empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--muted); font-size: 16px; text-align: center; padding: 0 16px; }
+.empty p { margin: 0; }
+.empty-note { font-size: 13px; max-width: 520px; }
 
 .main { flex: 1; display: flex; min-height: 0; }
 .pane-table { width: var(--table-w); flex: none; display: flex; flex-direction: column; min-width: 200px; }

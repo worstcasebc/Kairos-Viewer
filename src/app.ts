@@ -1,11 +1,8 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-import { getCurrentWebview } from '@tauri-apps/api/webview';
-import { open } from '@tauri-apps/plugin-dialog';
 import { makeWorkingDayFn, todayCivil } from './gantt/calendar';
 import { renderGanttAxis, renderGanttBody, type GanttOptions } from './gantt/render';
 import { computeRange, createScale, type Zoom } from './gantt/scale';
 import type { ProjectDto } from './model';
+import type { LoadedFile, Platform } from './platform/types';
 import { predecessorTexts } from './predecessors';
 import {
   baselineMap, collapseAll, displayTitle, expandAll, initialState, loadProject, missingDates, printZoom,
@@ -31,7 +28,10 @@ const LAYOUT = `
   <button type="button" data-action="print">Drucken…</button>
 </header>
 <div class="banner" hidden></div>
-<div class="empty">Kairos-Datei öffnen oder hierher ziehen</div>
+<div class="empty">
+  <p class="empty-title">Kairos-Datei öffnen oder hierher ziehen</p>
+  <p class="empty-note" hidden></p>
+</div>
 <main class="main" hidden>
   <section class="pane-table">
     <div class="table-scroll"><div class="table-header"></div><div class="table-rows"></div></div>
@@ -43,7 +43,12 @@ const LAYOUT = `
 </main>
 <div class="print-pages"></div>`;
 
-export function startApp(root: HTMLElement): void {
+export interface StartOptions {
+  /** Zusatzzeile im leeren Zustand (Web: Datenschutzhinweis). */
+  privacyNote?: string;
+}
+
+export function startApp(root: HTMLElement, platform: Platform, options: StartOptions = {}): void {
   let state: ViewState = initialState();
   root.innerHTML = LAYOUT;
   const q = <T extends Element>(selector: string) => root.querySelector(selector) as T;
@@ -64,6 +69,11 @@ export function startApp(root: HTMLElement): void {
   const baselineSelect = q<HTMLSelectElement>('[data-action="baseline-select"]');
   const zoomButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-zoom]')];
   const printPages = q<HTMLDivElement>('.print-pages');
+  if (options.privacyNote) {
+    const note = q<HTMLParagraphElement>('.empty-note');
+    note.textContent = options.privacyNote;
+    note.hidden = false;
+  }
   // Zuletzt gerenderte Ansicht; der Druck baut daraus seitenweise eigene Tabellen-/Gantt-Stücke.
   let view: { table: TableOptions; gantt: GanttOptions } | null = null;
 
@@ -148,26 +158,12 @@ export function startApp(root: HTMLElement): void {
     }
   }
 
-  async function openPath(path: string): Promise<void> {
-    try {
-      const project = await invoke<ProjectDto>('open_project', { path });
-      state = loadProject(state, project, path);
-      errorMessage = null;
-      ganttScroll.scrollTop = 0;
-      ganttScroll.scrollLeft = 0;
-      render();
-    } catch (error) {
-      showError(String(error));
-    }
-  }
-
-  async function chooseFile(): Promise<void> {
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      filters: [{ name: 'Kairos-Projekt', extensions: ['kairos'] }],
-    });
-    if (typeof selected === 'string') await openPath(selected);
+  function showLoaded({ project, fileName }: LoadedFile): void {
+    state = loadProject(state, project, fileName);
+    errorMessage = null;
+    ganttScroll.scrollTop = 0;
+    ganttScroll.scrollLeft = 0;
+    render();
   }
 
   /** Druckseiten mit festen Zeilenblöcken: Tabelle und Gantt brechen so garantiert gemeinsam um. */
@@ -201,7 +197,7 @@ export function startApp(root: HTMLElement): void {
     document.documentElement.style.setProperty('--print-zoom', String(zoom));
     renderPrintPages(rowsPerPrintPage(zoom));
     try {
-      await invoke('print_window');
+      await platform.print();
     } catch (error) {
       showError(`Drucken fehlgeschlagen: ${String(error)}`);
     }
@@ -241,7 +237,7 @@ export function startApp(root: HTMLElement): void {
   });
 
   // Toolbar
-  q<HTMLButtonElement>('[data-action="open"]').addEventListener('click', () => void chooseFile());
+  q<HTMLButtonElement>('[data-action="open"]').addEventListener('click', () => void platform.chooseFile());
   q<HTMLButtonElement>('[data-action="expand"]').addEventListener('click', () => {
     state = expandAll(state);
     render();
@@ -266,17 +262,8 @@ export function startApp(root: HTMLElement): void {
     render();
   });
 
-  // Dateien von außen: Drag&Drop, macOS-Dateiöffnung, Startargument
-  void getCurrentWebview().onDragDropEvent((event) => {
-    if (event.payload.type !== 'drop') return;
-    const path = event.payload.paths.find((p) => p.toLowerCase().endsWith('.kairos'));
-    if (path) void openPath(path);
-    else showError('Nur .kairos-Dateien können geöffnet werden.');
-  });
-  void listen<string>('open-file', (event) => void openPath(event.payload)).then(async () => {
-    const initial = await invoke<string | null>('initial_file');
-    if (initial) await openPath(initial);
-  });
+  // Dateien kommen über die Plattform: Dialog, Drag&Drop, Startargument (Desktop) bzw. Dateiauswahl (Web).
+  platform.start({ loaded: showLoaded, failed: showError });
 
   render();
 }
