@@ -59,3 +59,35 @@ test('Drucken teilt lange Projekte in Seiten mit eigenen Kopfzeilen', async () =
     expect(page.querySelectorAll('svg.gantt-body')).toHaveLength(1);
   }
 });
+
+test('Fehlermeldung bleibt bis zum nächsten erfolgreichen Öffnen stehen', async () => {
+  const { emit } = await import('@tauri-apps/api/event');
+  mockWindows('main');
+  mockIPC(
+    (cmd, args) => {
+      if (cmd === 'initial_file') return '/x/demo.kairos';
+      if (cmd === 'open_project') {
+        if ((args as { path: string }).path.includes('kaputt')) throw 'Die Datei ist keine Kairos-Projektdatei.';
+        return demoProject();
+      }
+      return null;
+    },
+    { shouldMockEvents: true },
+  );
+  const root = document.createElement('div');
+  document.body.replaceChildren(root);
+  startApp(root);
+  await vi.waitFor(() => expect(root.querySelectorAll('.table-rows .row')).toHaveLength(9));
+  const banner = root.querySelector('.banner') as HTMLElement;
+
+  await emit('open-file', '/x/kaputt.kairos');
+  await vi.waitFor(() => expect(banner.hidden).toBe(false));
+  expect(banner.textContent).toBe('Die Datei ist keine Kairos-Projektdatei.');
+
+  (root.querySelector('[data-zoom="day"]') as HTMLButtonElement).click();
+  expect(banner.hidden).toBe(false);
+  expect(banner.className).toBe('banner error');
+
+  await emit('open-file', '/x/demo.kairos');
+  await vi.waitFor(() => expect(banner.hidden).toBe(true));
+});

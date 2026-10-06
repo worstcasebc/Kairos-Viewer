@@ -67,10 +67,18 @@ export function startApp(root: HTMLElement): void {
   // Zuletzt gerenderte Ansicht; der Druck baut daraus seitenweise eigene Tabellen-/Gantt-Stücke.
   let view: { table: TableOptions; gantt: GanttOptions } | null = null;
 
+  // Letzte Fehlermeldung; bleibt bei jedem Neu-Rendern stehen, bis eine Datei erfolgreich geöffnet wurde.
+  let errorMessage: string | null = null;
+
   function showBanner(text: string, kind: 'info' | 'error'): void {
     banner.textContent = text;
     banner.className = `banner ${kind}`;
     banner.hidden = false;
+  }
+
+  function showError(text: string): void {
+    errorMessage = text;
+    showBanner(text, 'error');
   }
 
   function renderToolbar(project: ProjectDto | null): void {
@@ -131,7 +139,9 @@ export function startApp(root: HTMLElement): void {
     syncScroll();
 
     const missing = missingDates(project);
-    if (missing > 0) {
+    if (errorMessage) {
+      showBanner(errorMessage, 'error');
+    } else if (missing > 0) {
       showBanner(`${missing} Vorgänge ohne gespeicherte Termine – Datei in Kairos öffnen und speichern.`, 'info');
     } else {
       banner.hidden = true;
@@ -142,11 +152,12 @@ export function startApp(root: HTMLElement): void {
     try {
       const project = await invoke<ProjectDto>('open_project', { path });
       state = loadProject(state, project, path);
+      errorMessage = null;
       ganttScroll.scrollTop = 0;
       ganttScroll.scrollLeft = 0;
       render();
     } catch (error) {
-      showBanner(String(error), 'error');
+      showError(String(error));
     }
   }
 
@@ -192,7 +203,7 @@ export function startApp(root: HTMLElement): void {
     try {
       await invoke('print_window');
     } catch (error) {
-      showBanner(`Drucken fehlgeschlagen: ${String(error)}`, 'error');
+      showError(`Drucken fehlgeschlagen: ${String(error)}`);
     }
   }
 
@@ -260,7 +271,7 @@ export function startApp(root: HTMLElement): void {
     if (event.payload.type !== 'drop') return;
     const path = event.payload.paths.find((p) => p.toLowerCase().endsWith('.kairos'));
     if (path) void openPath(path);
-    else showBanner('Nur .kairos-Dateien können geöffnet werden.', 'error');
+    else showError('Nur .kairos-Dateien können geöffnet werden.');
   });
   void listen<string>('open-file', (event) => void openPath(event.payload)).then(async () => {
     const initial = await invoke<string | null>('initial_file');
