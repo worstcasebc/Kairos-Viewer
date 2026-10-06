@@ -11,6 +11,7 @@
   .pane-table, .pane-gantt, .table-scroll, .gantt-scroll, .gantt-header {
     overflow: visible !important; height: auto !important; max-height: none !important;
   }
+  .pane-table { width: max-content !important; }
   .pane-gantt { flex: none; }
   .row { break-inside: avoid; }
 }

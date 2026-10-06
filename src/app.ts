@@ -152,7 +152,8 @@ export function startApp(root: HTMLElement): void {
 
   async function printProject(): Promise<void> {
     if (!state.project) return;
-    const total = tablePane.getBoundingClientRect().width + ganttScroll.scrollWidth;
+    // Im Druck bekommt die Tabelle ihre volle Breite (print.css), nicht die Bildschirmbreite des Bereichs.
+    const total = tableScroll.scrollWidth + ganttScroll.scrollWidth;
     document.documentElement.style.setProperty('--print-zoom', String(printZoom(total)));
     try {
       await invoke('print_window');
