@@ -37,7 +37,7 @@ Ergebnis: `.msi` und `*-setup.exe` unter `src-tauri\target\release\bundle\`.
 
 Der Viewer läuft auch als statische Webseite. Die Datei wird **ausschließlich im Browser** gelesen (sql.js als eingebettetes
 WebAssembly) und nie an den Server übertragen; die Sicherheitsrichtlinie (`connect-src 'none'`) verbietet der Seite nach dem
-Laden jede Netzwerkverbindung. Keine Cookies, kein Tracking, keine externen Ressourcen.
+Laden jede Datenverbindung (fetch, XHR, WebSocket). Der Seitentitel bleibt fest, damit Projektnamen nicht im Browserverlauf landen. Keine Cookies, kein Tracking, keine externen Ressourcen.
 
 ```bash
 npm run build:web      # → dist-web/ (statisch, relativ verlinkt)

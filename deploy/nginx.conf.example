@@ -9,17 +9,20 @@ map $remote_addr $remote_addr_anon {
     default                        0.0.0.0;
 }
 log_format kairos_anon '$remote_addr_anon - [$time_local] "$request" $status $body_bytes_sent';
+# Server ohne eigenes access_log erben sonst das Standardformat "combined" (volle IP, User-Agent, Referrer):
+access_log /var/log/nginx/access.log kairos_anon;
 
 # --- Server ---
 server {
     listen 80;
     server_name viewer.example.de;            # PLATZHALTER
+    access_log /var/log/nginx/kairos-viewer.log kairos_anon;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    http2 on;
+    http2 on;                                 # nginx ≥ 1.25.1; ältere Versionen: "listen 443 ssl http2;"
     server_name viewer.example.de;            # PLATZHALTER
     ssl_certificate     /etc/letsencrypt/live/viewer.example.de/fullchain.pem;   # PLATZHALTER
     ssl_certificate_key /etc/letsencrypt/live/viewer.example.de/privkey.pem;     # PLATZHALTER
@@ -27,6 +30,9 @@ server {
     root /var/www/kairos-viewer;
     index index.html;
     access_log /var/log/nginx/kairos-viewer.log kairos_anon;  # Aufbewahrung per logrotate kurz halten (z. B. 7 Tage)
+    # Achtung: error_log enthält volle IP-Adressen (z. B. bei abgewiesenen Methoden). Nur kritische Fehler protokollieren
+    # und kurz aufbewahren – oder in der Datenschutzerklärung erwähnen.
+    error_log /var/log/nginx/kairos-viewer.error.log crit;
 
     # Nur lesen – Uploads gibt es nicht (limit_except ist nur in location-Blöcken erlaubt, s. u.).
     client_max_body_size 1k;
