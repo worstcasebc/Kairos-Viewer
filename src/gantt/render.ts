@@ -54,11 +54,17 @@ export function renderGanttBody(opts: GanttOptions): SVGSVGElement {
   const svg = el('svg', { width: scale.width, height, viewBox: `0 0 ${scale.width} ${height}`, class: 'gantt-body' });
   arrowMarkers(svg);
 
-  // Hintergrund: arbeitsfreie Tage, Tagesraster, Zeilenlinien
-  for (let day = scale.startDay; day <= scale.endDay; day++) {
-    const x = scale.xDay(day);
-    if (!opts.isWorkingDay(day)) el('rect', { x, y: 0, width: scale.pxPerDay, height, class: 'nonworking' }, svg);
-    if (scale.zoom === 'day') verticalLine(svg, x, height, 'grid');
+  // Hintergrund: arbeitsfreie Tage (aufeinanderfolgende als ein Rechteck), Tagesraster, Zeilenlinien
+  let freeRunStart: number | null = null;
+  for (let day = scale.startDay; day <= scale.endDay + 1; day++) {
+    const free = day <= scale.endDay && !opts.isWorkingDay(day);
+    if (free && freeRunStart === null) freeRunStart = day;
+    if (!free && freeRunStart !== null) {
+      const x = scale.xDay(freeRunStart);
+      el('rect', { x, y: 0, width: scale.xDay(day) - x, height, class: 'nonworking' }, svg);
+      freeRunStart = null;
+    }
+    if (day <= scale.endDay && scale.zoom === 'day') verticalLine(svg, scale.xDay(day), height, 'grid');
   }
   rows.forEach((_, i) => {
     const y = (i + 1) * ROW_HEIGHT - 0.5;

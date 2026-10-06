@@ -23,6 +23,8 @@ export interface AxisCell {
 
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+/** Maximaler Abstand eines Termins vom Median aller Termine, der noch in den Zeitbereich einfließt (5 Jahre). */
+const MAX_DISTANCE_DAYS = 5 * 366;
 
 export function computeRange(project: ProjectDto, baselineId: string | null, today: string): { startDay: number; endDay: number } {
   const dates: string[] = [];
@@ -39,8 +41,12 @@ export function computeRange(project: ProjectDto, baselineId: string | null, tod
     const base = dayNumber(isCivil(project.startDate) ? project.startDate : today);
     return { startDay: base - 2, endDay: base + 30 };
   }
-  const days = dates.map(dayNumber);
-  return { startDay: Math.min(...days) - 2, endDay: Math.max(...days) + 7 };
+  // Termine weiter als MAX_DISTANCE_DAYS vom Median (kaputte Datei, Tippfehler im Jahr) ignorieren,
+  // sonst würde die Zeitachse Jahrhunderte breit. Solche Balken liegen dann außerhalb der Ansicht.
+  const days = dates.map(dayNumber).sort((a, b) => a - b);
+  const median = days[Math.floor(days.length / 2)];
+  const plausible = days.filter((d) => Math.abs(d - median) <= MAX_DISTANCE_DAYS);
+  return { startDay: plausible[0] - 2, endDay: plausible[plausible.length - 1] + 7 };
 }
 
 export function createScale(zoom: Zoom, startDay: number, endDay: number): TimeScale {

@@ -16,6 +16,16 @@ describe('computeRange', () => {
     expect(computeRange(project, null, '2030-01-01').endDay).toBe(dayNumber('2026-07-21'));
   });
 
+  test('Ausreißer weit weg vom Median (kaputte Datei) blähen den Bereich nicht auf', () => {
+    const project = demoProject();
+    project.tasks[0].earlyStart = '1900-01-01T08:00';
+    project.tasks[1].earlyFinish = '2999-12-31T17:00';
+    expect(computeRange(project, null, '2030-01-01')).toEqual({
+      startDay: dayNumber('2026-06-23'),
+      endDay: dayNumber('2026-07-21'),
+    });
+  });
+
   test('ohne Termine: Projektstart, sonst heute', () => {
     const project = { ...demoProject(), tasks: [], baselines: [], startDate: '2026-01-05' };
     expect(computeRange(project, null, '2030-01-01')).toEqual({

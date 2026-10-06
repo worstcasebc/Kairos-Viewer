@@ -46,8 +46,10 @@ describe('renderGanttBody', () => {
 
   test('Wochenenden werden schattiert, Heute-Linie gezeichnet', () => {
     const svg = render();
-    // 2026-06-23..2026-07-21: 4 Samstage + 4 Sonntage
-    expect(svg.querySelectorAll('rect.nonworking')).toHaveLength(8);
+    // 2026-06-23..2026-07-21: 4 Wochenenden, je Sa+So als ein zusammenhängendes Rechteck
+    const weekends = [...svg.querySelectorAll('rect.nonworking')];
+    expect(weekends).toHaveLength(4);
+    expect(weekends.map((r) => Number(r.getAttribute('width')))).toEqual([140, 140, 140, 140]);
     expect(svg.querySelectorAll('line.today')).toHaveLength(1);
   });
 
