@@ -197,7 +197,7 @@ interface DependencyDto { predecessorId: string; successorId: string; type: 'FS'
 ## 6. Tests
 
 - **Rust (`cargo test`):**
-  - Fixture: Kopie von `Kairos-Demo.kairos`. Die reale Projektdatei und wird **nicht** ins Repo kopiert, sondern nur manuell geprüft.
+  - Fixture: Kopie von `Kairos-Demo.kairos`. Die reale Projektdatei wird **nicht** ins Repo kopiert, sondern nur manuell geprüft.
   - Zusätzlich synthetische Dateien, die im Test per SQL erzeugt werden:
     - v5 mit allen Spalten
     - v6 (wird abgelehnt)
