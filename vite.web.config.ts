@@ -16,7 +16,11 @@ export default defineConfig({
     emptyOutDir: true,
     target: 'es2021',
     rollupOptions: {
-      input: { index: `${web}index.html` },
+      input: {
+        index: `${web}index.html`,
+        impressum: `${web}impressum.html`,
+        datenschutz: `${web}datenschutz.html`,
+      },
     },
   },
 });

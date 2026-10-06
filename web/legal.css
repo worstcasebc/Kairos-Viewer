@@ -1,0 +1,6 @@
+:root { color-scheme: light dark; font: 15px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+body { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.15rem; margin-top: 1.8em; }
+.placeholder { background: #fff3c4; color: #5c4800; padding: 0 3px; border-radius: 3px; }
+.draft { border: 2px solid #c98a00; padding: 8px 12px; border-radius: 6px; }
+a { color: #2f6fd6; }
