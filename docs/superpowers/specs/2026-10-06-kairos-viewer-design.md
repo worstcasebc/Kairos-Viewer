@@ -95,6 +95,8 @@ Tauri-Commands:
 
 ### 4.2 DTO (gekürzt)
 
+Optionale Felder werden als `null` serialisiert (TypeScript: `T | null`, nicht `?:`).
+
 ```ts
 interface ProjectDto {
   schemaVersion: number; name: string; startDate?: string; finishDate?: string; statusDate?: string;
@@ -122,11 +124,12 @@ interface DependencyDto { predecessorId: string; successorId: string; type: 'FS'
   - `visibleRows(tree, collapsed: Set<id>)` liefert die sichtbaren Zeilen mit Tiefe.
 - **`format.ts`**
   - **Dauer:** `minutesPerDay = hoursPerDay * 60`.
-    - `d` ergibt `minutes / minutesPerDay` mit höchstens zwei Nachkommastellen, deutschem Komma und Suffix „ d“. Beispiel: 1440 min bei 8 h ergeben „3 d“.
+    - `d` ergibt `minutes / minutesPerDay` mit höchstens zwei Nachkommastellen, **Dezimalpunkt wie in Kairos** (`DurationParser.format`) und Suffix „ d“. Beispiel: 1440 min bei 8 h ergeben „3 d“.
     - `h` ergibt Stunden mit „ h“, `min` ergibt Minuten mit „ min“.
     - Ein Meilenstein mit 0 Minuten wird als „0 d“ angezeigt.
-  - **Datum:** `2026-06-25T08:00` wird zu „25.06.26 08:00“. Die Formatierung arbeitet direkt auf dem String, nicht über `Date`.
-  - **Puffer:** wie die Dauer in Tagen. Leer, wenn `null`.
+    - **Sammelvorgänge zeigen keine Dauer** (leere Zelle, wie Kairos).
+  - **Datum:** `2026-06-25T08:00` wird zu „25.06.26, 08:00“ (wie das macOS-Kurzformat in Kairos). Die Formatierung arbeitet direkt auf dem String, nicht über `Date`.
+  - **Puffer:** in Tagen, wenn durch `minutesPerDay` teilbar, sonst in Stunden; negative Werte mit „-“. Leer, wenn `null` (wie `FloatText` in Kairos).
 - **`predecessors.ts`**
   - Je Nachfolger die eingehenden Abhängigkeiten in Datenreihenfolge als Token `<Nr><Typ≠FS><±Lag>`.
   - Der Lag steht in `d`, wenn er durch `minutesPerDay` teilbar ist, sonst in `h`, wenn er durch 60 teilbar ist, sonst in `min`.
@@ -194,7 +197,7 @@ interface DependencyDto { predecessorId: string; successorId: string; type: 'FS'
 ## 6. Tests
 
 - **Rust (`cargo test`):**
-  - Fixtures: Kopie von `Kairos-Demo.kairos`.
+  - Fixture: Kopie von `Kairos-Demo.kairos`. Die reale Projektdatei und wird **nicht** ins Repo kopiert, sondern nur manuell geprüft.
   - Zusätzlich synthetische Dateien, die im Test per SQL erzeugt werden:
     - v5 mit allen Spalten
     - v6 (wird abgelehnt)
