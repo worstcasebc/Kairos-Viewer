@@ -107,3 +107,12 @@ test('Datenschutzhinweis im leeren Zustand, wenn übergeben', () => {
   expect(withNote.textContent).toBe(note);
   expect((setup().root.querySelector('.empty-note') as HTMLElement).hidden).toBe(true);
 });
+
+test('mit fixedTitle bleibt der Seitentitel fest – kein Projektname im Browserverlauf', () => {
+  const { fake } = setup({ fixedTitle: true });
+  fake.open({ ...demoProject(), name: 'Geheimes Projekt' });
+  expect(document.title).toBe('Kairos Viewer');
+  const desktop = setup();
+  desktop.fake.open({ ...demoProject(), name: 'Geheimes Projekt' });
+  expect(document.title).toBe('Geheimes Projekt – Kairos Viewer');
+});

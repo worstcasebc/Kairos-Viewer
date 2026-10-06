@@ -9,5 +9,5 @@ import { loadSqlJs } from './web/sqlite-inline';
 startApp(
   document.getElementById('app')!,
   webPlatform({ readProject: async (bytes) => readProject(bytes, await loadSqlJs()) }),
-  { privacyNote: 'Ihre Datei wird ausschließlich in Ihrem Browser verarbeitet und nicht übertragen.' },
+  { privacyNote: 'Ihre Datei wird ausschließlich in Ihrem Browser verarbeitet und nicht übertragen.', fixedTitle: true },
 );

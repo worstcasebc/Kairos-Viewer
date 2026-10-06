@@ -46,6 +46,11 @@ const LAYOUT = `
 export interface StartOptions {
   /** Zusatzzeile im leeren Zustand (Web: Datenschutzhinweis). */
   privacyNote?: string;
+  /**
+   * Seitentitel bleibt „Kairos Viewer“ (Web): Browser speichern Titel im Verlauf und synchronisieren ihn ggf. –
+   * der Projektname darf den Rechner so nicht verlassen.
+   */
+  fixedTitle?: boolean;
 }
 
 export function startApp(root: HTMLElement, platform: Platform, options: StartOptions = {}): void {
@@ -93,7 +98,7 @@ export function startApp(root: HTMLElement, platform: Platform, options: StartOp
 
   function renderToolbar(project: ProjectDto | null): void {
     titleEl.textContent = displayTitle(state);
-    document.title = project ? `${displayTitle(state)} – Kairos Viewer` : 'Kairos Viewer';
+    document.title = project && !options.fixedTitle ? `${displayTitle(state)} – Kairos Viewer` : 'Kairos Viewer';
     for (const b of zoomButtons) b.setAttribute('aria-pressed', String(b.dataset.zoom === state.zoom));
     const hasBaselines = (project?.baselines.length ?? 0) > 0;
     baselineCheckbox.disabled = !hasBaselines;
