@@ -46,8 +46,10 @@ npm run preview:web    # lokal mit denselben Sicherheits-Headern: http://localho
 
 Ausliefern: Inhalt von `dist-web/` auf einen beliebigen Webserver kopieren und die Header aus
 `deploy/nginx.conf.example` + `deploy/nginx-security-headers.conf` bzw. `deploy/.htaccess.example` übernehmen.
-`web/impressum.html` und `web/datenschutz.html` enthalten Platzhalter (`[PLATZHALTER: …]`), die vor der Veröffentlichung
-ersetzt und rechtlich geprüft werden müssen.
+Impressum und Datenschutzerklärung (`web/impressum.html`, `web/datenschutz.html`) enthalten nur Platzhalter
+(`%VITE_LEGAL_…%`). Die echten Angaben stehen in `.env.local` (nicht versioniert; Vorlage: `.env.example`) und werden erst
+beim Build eingesetzt – der Web-Build bricht ab, solange ein Platzhalter übrig ist. Die Datenschutzerklärung beschreibt
+Logging und Aufbewahrung; sie muss zur tatsächlichen Server-Konfiguration passen.
 
 ## Dateizuordnung
 

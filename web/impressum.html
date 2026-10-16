@@ -13,18 +13,17 @@
     <link rel="stylesheet" href="./legal.css" />
   </head>
   <body>
-    <!-- PLATZHALTER ersetzen; vor Veröffentlichung rechtlich prüfen. -->
     <p><a href="./index.html">← Zurück zum Kairos Viewer</a></p>
     <h1>Impressum</h1>
     <p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
     <p>
-      <span class="placeholder">[PLATZHALTER: Vor- und Nachname bzw. Firma]</span><br />
-      <span class="placeholder">[PLATZHALTER: Straße und Hausnummer]</span><br />
-      <span class="placeholder">[PLATZHALTER: PLZ und Ort]</span>
+      %VITE_LEGAL_NAME%<br />
+      %VITE_LEGAL_STREET%<br />
+      %VITE_LEGAL_CITY%
     </p>
     <h2>Kontakt</h2>
-    <p>E-Mail: <span class="placeholder">[PLATZHALTER: E-Mail-Adresse]</span></p>
+    <p>E-Mail: <a href="mailto:%VITE_LEGAL_EMAIL%">%VITE_LEGAL_EMAIL%</a></p>
     <h2>Verantwortlich für den Inhalt</h2>
-    <p><span class="placeholder">[PLATZHALTER: Name, Anschrift – falls abweichend]</span></p>
+    <p>%VITE_LEGAL_NAME% (Anschrift wie oben)</p>
   </body>
 </html>

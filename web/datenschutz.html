@@ -13,21 +13,21 @@
     <link rel="stylesheet" href="./legal.css" />
   </head>
   <body>
-    <!-- Entwurf passend zur Technik des Kairos Viewers. PLATZHALTER ersetzen und vor Veröffentlichung rechtlich prüfen. -->
     <p><a href="./index.html">← Zurück zum Kairos Viewer</a></p>
     <h1>Datenschutzerklärung</h1>
-    <p class="draft">Entwurf – vor Veröffentlichung rechtlich prüfen und Platzhalter ersetzen.</p>
 
     <h2>1. Verantwortlicher</h2>
     <p>
-      <span class="placeholder">[PLATZHALTER: Name bzw. Firma, Anschrift]</span><br />
-      E-Mail: <span class="placeholder">[PLATZHALTER: E-Mail-Adresse]</span>
+      %VITE_LEGAL_NAME%<br />
+      %VITE_LEGAL_STREET%<br />
+      %VITE_LEGAL_CITY%<br />
+      E-Mail: <a href="mailto:%VITE_LEGAL_EMAIL%">%VITE_LEGAL_EMAIL%</a>
     </p>
 
     <h2>2. Ihre Projektdateien verlassen Ihren Computer nicht</h2>
     <p>
       Der Kairos Viewer liest die von Ihnen ausgewählte Datei ausschließlich in Ihrem Browser. Die Datei und ihre Inhalte
-      werden <strong>nicht</strong> an unseren Server oder an Dritte übertragen und nicht gespeichert – weder dauerhaft noch
+      werden <strong>nicht</strong> an den Server oder an Dritte übertragen und nicht gespeichert – weder dauerhaft noch
       vorübergehend. Nach dem Schließen oder Neuladen der Seite sind die Daten aus dem Arbeitsspeicher Ihres Browsers entfernt.
       Technisch ist der Seite durch eine Sicherheitsrichtlinie (Content Security Policy) untersagt, nach dem Laden Daten an
       einen Server zu senden (keine Datenverbindungen wie fetch, XHR oder WebSocket). Auch der Name Ihres Projekts erscheint
@@ -37,10 +37,11 @@
     <h2>3. Aufruf der Webseite (Server-Logfiles)</h2>
     <p>
       Beim Aufruf der Seite verarbeitet der Webserver technisch notwendige Daten, die Ihr Browser übermittelt: IP-Adresse
-      (gekürzt gespeichert), Datum und Uhrzeit, aufgerufene Datei, Statuscode und übertragene Datenmenge. Zweck ist die
+      (gekürzt gespeichert), Datum und Uhrzeit, aufgerufene Datei, Statuscode, übertragene Datenmenge, Referrer sowie
+      Browser und Betriebssystem (User-Agent). Zweck ist die
       Auslieferung und der sichere Betrieb der Seite. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am
-      sicheren Betrieb). Die Logdateien werden nach <span class="placeholder">[PLATZHALTER: z. B. 7 Tagen]</span> gelöscht.
-      Hoster: <span class="placeholder">[PLATZHALTER: Name und Anschrift des Hosters bzw. „eigener Server“]</span>.
+      sicheren Betrieb). Die Logdateien werden nach %VITE_LEGAL_LOG_RETENTION% gelöscht.
+      %VITE_LEGAL_HOSTING%
     </p>
 
     <h2>4. Keine Cookies, kein Tracking</h2>
@@ -54,9 +55,9 @@
       Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der
       Verarbeitung (Art. 18), Widerspruch (Art. 21) sowie Datenübertragbarkeit (Art. 20). Wenden Sie sich dazu an den oben
       genannten Verantwortlichen. Sie haben außerdem das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren
-      (Art. 77 DSGVO), z. B. <span class="placeholder">[PLATZHALTER: zuständige Aufsichtsbehörde]</span>.
+      (Art. 77 DSGVO), z. B. %VITE_LEGAL_AUTHORITY%.
     </p>
 
-    <p>Stand: <span class="placeholder">[PLATZHALTER: Datum]</span></p>
+    <p>Stand: %VITE_LEGAL_DATE%</p>
   </body>
 </html>

@@ -3,12 +3,14 @@ dist/
 dist-web/
 src-tauri/target/
 src-tauri/gen/
+deploy/.htaccess
 .DS_Store
 .superpowers/
 
 # Geheimnisse und Signier-Material nie committen
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 *.p12
