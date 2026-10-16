@@ -1,7 +1,8 @@
 # Kairos Viewer (Web) – Beispiel für Apache (mod_headers). Als .htaccess in das Verzeichnis mit dem Inhalt von dist-web/.
 # HTTPS und die Protokollierung werden in der Server-/Hoster-Konfiguration eingestellt. Die Datenschutzerklärung sagt
-# „IP-Adresse gekürzt gespeichert“ – das stimmt nur, wenn das CustomLog des vhosts ebenfalls gekürzte IPs schreibt
-# (z. B. per mod_log_config mit anonymisierender Pipe oder Hoster-Option „IP-Anonymisierung“). Auch das ErrorLog
+# „IP-Adresse spätestens nach 24 Stunden gekürzt“ – das stimmt nur, wenn die Logs entsprechend gekürzt werden. Plesk:
+# Tools & Einstellungen → Servereinstellungen → IP-Adressen bei der Logrotation anonymisieren, dazu tägliche Rotation
+# (gilt für Apache- und nginx-Proxy-Logs). Sonst z. B. mod_log_config mit anonymisierender Pipe. Auch das ErrorLog
 # enthält volle IPs. Beides vor der Veröffentlichung prüfen.
 <IfModule mod_headers.c>
   Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
